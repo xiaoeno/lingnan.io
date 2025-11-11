@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <title>加密密码生成器</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;display:flex;justify-content:center;align-items:center;height:100vh}
+    .box{background:#fff;padding:30px 40px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);width:340px}
+    h2{margin-top:0;text-align:center}
+    label{display:block;margin:10px 0 4px;font-size:14px}
+    input[type=text],input[type=password],input[type=date]{width:100%;padding:8px;box-sizing:border-box}
+    button{width:100%;padding:10px;margin-top:15px;font-size:16px;background:#007bff;color:#fff;border:0;border-radius:4px;cursor:pointer}
+    button:hover{background:#0056b3}
+    .result{margin-top:15px;font-size:14px}
+    .result input{font-weight:bold;color:#d00}
+    #loginBox{display:block}
+    #mainBox{display:none}
+  </style>
+</head>
+<body>
+
+  <!-- 登录框 -->
+  <div id="loginBox" class="box">
+    <h2>请先登录</h2>
+    <label>账号：</label>
+    <input type="text" id="user" value="admin"/>
+    <label>密码：</label>
+    <input type="password" id="pass" value="123456"/>
+    <button onclick="login()">登录</button>
+  </div>
+
+  <!-- 生成器框 -->
+  <div id="mainBox" class="box">
+    <h2>加密密码生成器</h2>
+
+    <label>授权天数（9999永久）：</label>
+    <input type="text" id="p" value="9999"/>
+
+    <label>设备序列号：</label>
+    <input type="text" id="k" value="1"/>
+
+    <label>选择日期：</label>
+    <input type="date" id="date"/>
+
+    <button onclick="gen()">生成密码</button>
+
+    <div class="result">
+      <label>结果密码：</label>
+      <input type="text" id="pwd" readonly/>
+    </div>
+  </div>
+
+  <script>
+    // ----------- 登录 -----------
+    function login(){
+      const u = document.getElementById('user').value.trim();
+      const p = document.getElementById('pass').value.trim();
+      if(u==='admin' && p==='123456'){
+        document.getElementById('mainBox').style.display = 'none';
+        document.getElementById('mainBox').style.display = 'block';
+        // 初始化生成器
+        document.getElementById('date').valueAsDate = new Date();
+        gen();
+      }else{
+        alert('账号或密码错误！');
+      }
+    }
+
+    // ----------- 生成逻辑 ----------
+    const digitSum = n => n.toString().split('').reduce((s,c)=>s+ +c, 0);
+
+    function encrypt(P, K, day){
+      const dayStr = String(day).padStart(2,'0');
+      const P0 = parseInt(`${P}${dayStr}`, 10);
+      const S  = P0 ^ (K + 2048);   // 保持与你最后版本一致
+      const E  = ((S & 0xFFF) << 12) | (S >>> 12);
+      return `${E}${String(digitSum(P0)).padStart(2,'0')}`;
+    }
+
+    function gen(){
+      const P = parseInt(document.getElementById('p').value, 10);
+      const K = parseInt(document.getElementById('k').value, 10);
+      const d = new Date(document.getElementById('date').value);
+      if(!Number.isFinite(P) || !Number.isFinite(K)) return alert('P 和 K 请输入整数！');
+      if(isNaN(d)) return alert('请选择日期！');
+      document.getElementById('pwd').value = encrypt(P, K, d.getDate());
+    }
+  </script>
+</body>
+</html>
