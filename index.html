@@ -2,32 +2,71 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
   <title>加密密码生成器</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f7;display:flex;justify-content:center;align-items:center;height:100vh}
-    .box{background:#fff;padding:30px 40px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);width:340px}
-    h2{margin-top:0;text-align:center}
-    label{display:block;margin:10px 0 4px;font-size:14px}
-    input[type=text],input[type=date]{width:100%;padding:8px;box-sizing:border-box}
-    button{width:100%;padding:10px;margin-top:15px;font-size:16px;background:#007bff;color:#fff;border:0;border-radius:4px;cursor:pointer}
-    button:hover{background:#0056b3}
-    .result{margin-top:15px;font-size:14px}
-    .result input{font-weight:bold;color:#d00}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:#f7f7f7;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif}
+    .wrap{padding:20px 15px;max-width:500px;margin:0 auto}
+    h2{text-align:center;margin-bottom:25px;font-size:24px;color:#333}
+    .row{margin-bottom:18px}
+    label{display:block;font-size:17px;color:#555;margin-bottom:6px}
+    input[type=text],input[type=date]{
+      width:100%;
+      height:48px;
+      font-size:18px;
+      padding:0 12px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      -webkit-appearance:none;
+    }
+    button{
+      width:100%;
+      height:52px;
+      font-size:20px;
+      color:#fff;
+      background:#007bff;
+      border:0;
+      border-radius:8px;
+      margin-top:25px;
+      cursor:pointer;
+      -webkit-appearance:none;
+    }
+    button:active{background:#0056b3}
+    .result{margin-top:25px}
+    .result input{
+      font-weight:bold;color:#d00;
+      font-size:20px;
+      text-align:center;
+      letter-spacing:1px;
+    }
+    /* 全屏提示 */
+    #fsBtn{
+      margin-top:15px;
+      background:#28a745;
+      font-size:16px;
+      height:44px;
+    }
   </style>
-<base target="_blank">
 </head>
 <body>
-  <div class="box">
+  <div class="wrap">
     <h2>加密密码生成器</h2>
 
-    <label>授权天数（9999永久）：</label>
-    <input type="text" id="p" value="9999"/>
+    <div class="row">
+      <label>授权天数（9999 永久）：</label>
+      <input type="text" id="p" value="9999" inputmode="numeric"/>
+    </div>
 
-    <label>设备序列号：</label>
-    <input type="text" id="k" value="1"/>
+    <div class="row">
+      <label>设备序列号：</label>
+      <input type="text" id="k" value="1" inputmode="numeric"/>
+    </div>
 
-    <label>经理日期（和触摸屏一致）：</label>
-    <input type="date" id="date"/>
+    <div class="row">
+      <label>今日日期（与触摸屏一致）：</label>
+      <input type="date" id="date"/>
+    </div>
 
     <button onclick="gen()">生成密码</button>
 
@@ -35,35 +74,40 @@
       <label>结果密码：</label>
       <input type="text" id="pwd" readonly/>
     </div>
+
+    <!-- 可选：手动全屏 -->
+    <!-- <button id="fsBtn" onclick="goFullscreen()">全屏显示</button> -->
   </div>
 
   <script>
-    // 数字和
     const digitSum = n => n.toString().split('').reduce((s,c)=>s+ +c, 0);
 
-    // 核心加密
     function encrypt(P, K, day){
-      const dayStr = String(day).padStart(2,'0');   // 强制两位
-      const P0 = parseInt(`${P}${dayStr}`, 10);     // 先拼接再转数字
+      const dayStr = String(day).padStart(2,'0');
+      const P0 = parseInt(`${P}${dayStr}`, 10);
       const S  = P0 ^ (K + 2048);
-      const E  = ((S & 0xFFF) << 12) | (S >>> 12);  // 无符号右移
+      const E  = ((S & 0xFFF) << 12) | (S >>> 12);
       return `${E}${String(digitSum(P0)).padStart(2,'0')}`;
     }
 
-    // 生成回调
     function gen(){
       const P = parseInt(document.getElementById('p').value, 10);
       const K = parseInt(document.getElementById('k').value, 10);
       const d = new Date(document.getElementById('date').value);
-      if(!Number.isFinite(P) || !Number.isFinite(K)) return alert('P 和 K 请输入整数！');
+      if(!Number.isFinite(P) || !Number.isFinite(K)) return alert('请输入有效数字！');
       if(isNaN(d)) return alert('请选择日期！');
-
       document.getElementById('pwd').value = encrypt(P, K, d.getDate());
     }
 
-    // 初始化
     document.getElementById('date').valueAsDate = new Date();
     gen();
+
+    function goFullscreen(){
+      const el = document.documentElement;
+      if(el.requestFullscreen) el.requestFullscreen();
+      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if(el.msRequestFullscreen) el.msRequestFullscreen();
+    }
   </script>
 </body>
 </html>
