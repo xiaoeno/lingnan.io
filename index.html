@@ -96,7 +96,9 @@
       const d = new Date(document.getElementById('date').value);
       if(!Number.isFinite(P) || !Number.isFinite(K)) return alert('请输入有效数字！');
       if(isNaN(d)) return alert('请选择日期！');
-      document.getElementById('pwd').value = encrypt(P, K, d.getDate());
+      console.log(d.getFullYear())
+      console.log(d.getMonth())
+      document.getElementById('pwd').value = encrypt(P, (K + d.getFullYear() + d.getMonth() + 1), d.getDate());
     }
 
     document.getElementById('date').valueAsDate = new Date();
